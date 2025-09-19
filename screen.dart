@@ -103,3 +103,52 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
+
+
+//This is the second approach for reading the data in riverpod without
+//defining the type stateful/stateless widget in the riverpod
+// login_screen.dart
+class LoginScreen extends ConsumerWidget {
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final state = ref.watch(loginStateProvider);
+    final notifier = ref.read(loginStateProvider.notifier);
+
+    return Scaffold(
+      // ... your existing UI code
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            TextFormField(
+              controller: state.emailController,
+              // ... other properties
+            ),
+            TextFormField(
+              controller: state.passwordController,
+              obscureText: state.obscurePassword,
+              // ... other properties
+            ),
+            ElevatedButton(
+              onPressed: state.isLoading
+                  ? null
+                  : () async {
+                      if (_formKey.currentState!.validate()) {
+                        await notifier.signIn(
+                          state.emailController.text.trim(),
+                          state.passwordController.text.trim(),
+                        );
+                      }
+                    },
+              child: state.isLoading
+                  ? CircularProgressIndicator()
+                  : Text('Sign In'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
